@@ -1,0 +1,9 @@
+.env
+.env.*
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+chroma_db/
+uploads/
+tests/
