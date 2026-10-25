@@ -1,7 +1,7 @@
 import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import computed_field
+from pydantic import computed_field, field_validator
 
 
 class Settings(BaseSettings):
@@ -22,6 +22,15 @@ class Settings(BaseSettings):
     # PostgreSQL Database URLs (psycopg 3)
     DATABASE_URL: str = "postgresql+psycopg://rag_user:rag_password@localhost:5432/rag_db"
     TEST_DATABASE_URL: str = "postgresql+psycopg://rag_user:rag_password@localhost:5432/rag_test_db"
+
+    @field_validator("DATABASE_URL", "TEST_DATABASE_URL", mode="before")
+    @classmethod
+    def use_psycopg3_driver(cls, value: str) -> str:
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+psycopg://", 1)
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+psycopg://", 1)
+        return value
 
     # JWT & Authentication Security
     JWT_SECRET: str = "replace-with-a-secure-random-secret-key-at-least-32-chars"
