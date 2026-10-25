@@ -64,7 +64,7 @@ class Settings(BaseSettings):
 
     # RAG & Embedding Settings
     GEMINI_API_KEY: str = ""
-    EMBEDDING_MODEL_NAME: str = "models/text-embedding-004"
+    EMBEDDING_MODEL_NAME: str = "models/gemini-embedding-001"
     RAG_TOP_K: int = 4
     RAG_DISTANCE_THRESHOLD: float = 1.2
 

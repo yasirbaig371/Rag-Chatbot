@@ -6,6 +6,12 @@ from app.core.config import settings
 from app.services import chroma_service
 
 
+def test_embedding_model_default_is_supported_gemini_model() -> None:
+    from app.core.config import Settings
+
+    assert Settings(_env_file=None).EMBEDDING_MODEL_NAME == "models/gemini-embedding-001"
+
+
 def test_embed_texts_uses_gemini_retrieval_document_embeddings(
     monkeypatch: Any,
 ) -> None:
@@ -34,6 +40,7 @@ def test_embed_texts_uses_gemini_retrieval_document_embeddings(
     assert [call["content"] for call in calls] == ["first", "second"]
     assert all(call["model"] == settings.EMBEDDING_MODEL_NAME for call in calls)
     assert all(call["task_type"] == "retrieval_document" for call in calls)
+    assert all(call["output_dimensionality"] == 768 for call in calls)
 
 
 def test_embed_query_uses_gemini_retrieval_query_embedding(
@@ -45,7 +52,9 @@ def test_embed_query_uses_gemini_retrieval_query_embedding(
     monkeypatch.setattr(
         chroma_service.genai,
         "embed_content",
-        lambda **_: {"embedding": [1, 2]},
+        lambda **kwargs: {"embedding": [1, 2]}
+        if kwargs["output_dimensionality"] == 768
+        else pytest.fail("Expected 768-dimensional embeddings."),
     )
 
     embedding = chroma_service.embed_query("question")

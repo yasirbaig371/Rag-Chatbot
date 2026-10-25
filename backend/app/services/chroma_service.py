@@ -42,6 +42,7 @@ def _embed_content(text: str, task_type: str) -> List[float]:
         model=settings.EMBEDDING_MODEL_NAME,
         content=text,
         task_type=task_type,
+        output_dimensionality=768,
     )
     return [float(value) for value in response["embedding"]]
 
