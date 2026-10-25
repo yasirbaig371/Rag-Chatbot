@@ -3,13 +3,13 @@ os.environ["ANONYMIZED_TELEMETRY"] = "False"
 from typing import Any, Dict, List, Optional
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from sentence_transformers import SentenceTransformer
+import google.generativeai as genai
 
 from app.core.config import settings
 
 # Global singleton handles
 _chroma_client: Optional[chromadb.PersistentClient] = None
-_embedding_model: Optional[SentenceTransformer] = None
+_configured_api_key: Optional[str] = None
 
 
 def get_chroma_client() -> chromadb.PersistentClient:
@@ -24,24 +24,36 @@ def get_chroma_client() -> chromadb.PersistentClient:
     return _chroma_client
 
 
-def get_embedding_model() -> SentenceTransformer:
-    """Returns singleton SentenceTransformer model instance (all-MiniLM-L6-v2, 384 dimensions)."""
-    global _embedding_model
-    if _embedding_model is None:
-        _embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
-    return _embedding_model
+def configure_embedding_api() -> None:
+    """Configures the Gemini API when a key is available."""
+    global _configured_api_key
+    api_key = settings.GEMINI_API_KEY
+    if api_key and api_key != _configured_api_key:
+        genai.configure(api_key=api_key)
+        _configured_api_key = api_key
+
+
+def _embed_content(text: str, task_type: str) -> List[float]:
+    if not settings.GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY must be set to generate embeddings.")
+
+    configure_embedding_api()
+    response = genai.embed_content(
+        model=settings.EMBEDDING_MODEL_NAME,
+        content=text,
+        task_type=task_type,
+    )
+    return [float(value) for value in response["embedding"]]
 
 
 def embed_texts(texts: List[str]) -> List[List[float]]:
-    """Generates 384-dimensional dense vector embeddings for input texts."""
-    model = get_embedding_model()
-    embeddings = model.encode(texts, convert_to_numpy=True, normalize_embeddings=True)
-    return embeddings.tolist()
+    """Generates Gemini retrieval-document embeddings for input texts."""
+    return [_embed_content(text, "retrieval_document") for text in texts]
 
 
 def embed_query(query: str) -> List[float]:
     """Generates embedding for a single search query."""
-    return embed_texts([query])[0]
+    return _embed_content(query, "retrieval_query")
 
 
 def get_collection_name(document_id: int) -> str:

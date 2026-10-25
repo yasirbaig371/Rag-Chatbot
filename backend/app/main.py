@@ -13,13 +13,13 @@ from app.api.api import api_router
 from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.db.session import SessionLocal
-from app.services.chroma_service import get_embedding_model
+from app.services.chroma_service import configure_embedding_api
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    """Load the local embedding model before accepting chat requests."""
-    await run_in_threadpool(get_embedding_model)
+    """Configure Gemini without loading a local embedding model."""
+    await run_in_threadpool(configure_embedding_api)
     yield
 
 

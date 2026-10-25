@@ -53,7 +53,8 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 10
 
     # RAG & Embedding Settings
-    EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
+    GEMINI_API_KEY: str = ""
+    EMBEDDING_MODEL_NAME: str = "models/text-embedding-004"
     RAG_TOP_K: int = 4
     RAG_DISTANCE_THRESHOLD: float = 1.2
 
