@@ -51,7 +51,10 @@ export function AuthProvider({ children }) {
   }, [clearAuth]);
 
   const login = useCallback(async (credentials) => {
-    const { data } = await api.post("/auth/login", credentials);
+    const { data } = await api.post("/auth/login", {
+      email: credentials.email,
+      password: credentials.password,
+    });
     setAccessToken(data.access_token);
     const profile = await api.get("/auth/me");
     setUser(profile.data);
