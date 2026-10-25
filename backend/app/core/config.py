@@ -49,7 +49,8 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> List[str]:
         if not self.CORS_ORIGINS:
             return ["http://localhost:5173"]
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+        origins = (origin.strip().rstrip("/") for origin in self.CORS_ORIGINS.split(","))
+        return [origin for origin in origins if origin]
 
     # OpenRouter LLM Configuration
     OPENROUTER_API_KEY: str = ""

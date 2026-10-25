@@ -33,7 +33,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Attach rate limiter state and middleware
+# Attach rate limiter state and middleware.
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
 
@@ -47,7 +47,8 @@ async def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExc
     )
 
 
-# Configure CORS with explicit allowed frontend origins and credentials support
+# Add CORS after other middleware so Starlette places it outermost, allowing it
+# to handle preflight requests before they reach routes or other middleware.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
